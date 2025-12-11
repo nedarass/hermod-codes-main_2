@@ -8,7 +8,7 @@ TCPClient::TCPClient(QObject *parent)
     , temperature("0")
     , brakePressed("0")
     // konum ve ivme için
-    , position("0")
+    , position(0.0)
     , acceleration("0.0")
 {
     connect(socket, &QTcpSocket::connected, this, &TCPClient::onConnected);
@@ -119,7 +119,7 @@ void TCPClient::parseSensorData(const QString &data) {
     
     // Konum verisi (Metre cinsinden)
     if (json.contains("position")) {
-        position = QString::number(json["position"].toDouble(), 'f', 1); // Virgülden sonra 1 basamak
+        position = json["position"].toDouble(); // Virgülden sonra 1 basamak
         qDebug() << "Position updated:" << position;
     }
 
