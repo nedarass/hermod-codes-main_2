@@ -1,0 +1,13 @@
+# ninja log v6
+71	336	7870678830618741	bifrost_autogen/timestamp	20ab3893196ddac6
+71	336	7870678830618741	bifrost_autogen/mocs_compilation.cpp	20ab3893196ddac6
+9204	9819	7870667215297328	bifrost.exe	b46388a2c9de1691
+71	336	7870678830618741	C:/hermod-codes-main_2/hermod-codes-main/bifrost-simple/build/Desktop_Qt_6_9_3_MinGW_64_bit-Debug/bifrost_autogen/timestamp	20ab3893196ddac6
+5246	8314	7870667175717881	CMakeFiles/bifrost.dir/tcp_client.cpp.obj	ad3a3a8ff919b3a9
+5240	9203	7870667175657936	CMakeFiles/bifrost.dir/main.cpp.obj	d576fa7da4531ae8
+71	336	7870678830618741	C:/hermod-codes-main_2/hermod-codes-main/bifrost-simple/build/Desktop_Qt_6_9_3_MinGW_64_bit-Debug/bifrost_autogen/mocs_compilation.cpp	20ab3893196ddac6
+5235	8243	7870667175608229	CMakeFiles/bifrost.dir/bifrost_autogen/mocs_compilation.cpp.obj	349beb28e8dc3fe9
+51	258	7870679899424622	bifrost_autogen/timestamp	20ab3893196ddac6
+51	258	7870679899424622	bifrost_autogen/mocs_compilation.cpp	20ab3893196ddac6
+51	258	7870679899424622	C:/hermod-codes-main_2/hermod-codes-main/bifrost-simple/build/Desktop_Qt_6_9_3_MinGW_64_bit-Debug/bifrost_autogen/timestamp	20ab3893196ddac6
+51	258	7870679899424622	C:/hermod-codes-main_2/hermod-codes-main/bifrost-simple/build/Desktop_Qt_6_9_3_MinGW_64_bit-Debug/bifrost_autogen/mocs_compilation.cpp	20ab3893196ddac6

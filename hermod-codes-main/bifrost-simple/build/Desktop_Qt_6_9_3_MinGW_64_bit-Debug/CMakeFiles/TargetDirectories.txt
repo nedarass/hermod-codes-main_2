@@ -1,0 +1,9 @@
+C:/hermod-codes-main_2/hermod-codes-main/bifrost-simple/build/Desktop_Qt_6_9_3_MinGW_64_bit-Debug/CMakeFiles/bifrost.dir
+C:/hermod-codes-main_2/hermod-codes-main/bifrost-simple/build/Desktop_Qt_6_9_3_MinGW_64_bit-Debug/CMakeFiles/edit_cache.dir
+C:/hermod-codes-main_2/hermod-codes-main/bifrost-simple/build/Desktop_Qt_6_9_3_MinGW_64_bit-Debug/CMakeFiles/rebuild_cache.dir
+C:/hermod-codes-main_2/hermod-codes-main/bifrost-simple/build/Desktop_Qt_6_9_3_MinGW_64_bit-Debug/CMakeFiles/list_install_components.dir
+C:/hermod-codes-main_2/hermod-codes-main/bifrost-simple/build/Desktop_Qt_6_9_3_MinGW_64_bit-Debug/CMakeFiles/install.dir
+C:/hermod-codes-main_2/hermod-codes-main/bifrost-simple/build/Desktop_Qt_6_9_3_MinGW_64_bit-Debug/CMakeFiles/install/local.dir
+C:/hermod-codes-main_2/hermod-codes-main/bifrost-simple/build/Desktop_Qt_6_9_3_MinGW_64_bit-Debug/CMakeFiles/install/strip.dir
+C:/hermod-codes-main_2/hermod-codes-main/bifrost-simple/build/Desktop_Qt_6_9_3_MinGW_64_bit-Debug/CMakeFiles/bifrost_autogen_timestamp_deps.dir
+C:/hermod-codes-main_2/hermod-codes-main/bifrost-simple/build/Desktop_Qt_6_9_3_MinGW_64_bit-Debug/CMakeFiles/bifrost_autogen.dir

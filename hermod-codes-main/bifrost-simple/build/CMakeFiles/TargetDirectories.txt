@@ -1,0 +1,9 @@
+C:/Users/Taha/Downloads/hermod-codes-main (1)/hermod-codes-main/bifrost-simple/build/CMakeFiles/bifrost.dir
+C:/Users/Taha/Downloads/hermod-codes-main (1)/hermod-codes-main/bifrost-simple/build/CMakeFiles/edit_cache.dir
+C:/Users/Taha/Downloads/hermod-codes-main (1)/hermod-codes-main/bifrost-simple/build/CMakeFiles/rebuild_cache.dir
+C:/Users/Taha/Downloads/hermod-codes-main (1)/hermod-codes-main/bifrost-simple/build/CMakeFiles/list_install_components.dir
+C:/Users/Taha/Downloads/hermod-codes-main (1)/hermod-codes-main/bifrost-simple/build/CMakeFiles/install.dir
+C:/Users/Taha/Downloads/hermod-codes-main (1)/hermod-codes-main/bifrost-simple/build/CMakeFiles/install/local.dir
+C:/Users/Taha/Downloads/hermod-codes-main (1)/hermod-codes-main/bifrost-simple/build/CMakeFiles/install/strip.dir
+C:/Users/Taha/Downloads/hermod-codes-main (1)/hermod-codes-main/bifrost-simple/build/CMakeFiles/bifrost_autogen_timestamp_deps.dir
+C:/Users/Taha/Downloads/hermod-codes-main (1)/hermod-codes-main/bifrost-simple/build/CMakeFiles/bifrost_autogen.dir

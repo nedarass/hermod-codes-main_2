@@ -1,0 +1,17 @@
+{
+    "stm32": {
+        "serial_port": "/dev/ttyUSB0",
+        "baudrate": 115200
+    },
+    "inverter": {
+        "serial_port": "/dev/ttyUSB1",
+        "baudrate": 115200,
+        "slave_id": 1,
+        "model": "Omron"
+    },
+    "server": {
+        "ip": "192.168.1.100",
+        "port": 5555
+    },
+    "update_rate_hz": 100
+}

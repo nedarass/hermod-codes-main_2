@@ -1,0 +1,7 @@
+/home/tcirpici/windows/Downloads/hermod-codes-main_2/hermod-codes-main/polaris/build/CMakeFiles/polaris.dir
+/home/tcirpici/windows/Downloads/hermod-codes-main_2/hermod-codes-main/polaris/build/CMakeFiles/edit_cache.dir
+/home/tcirpici/windows/Downloads/hermod-codes-main_2/hermod-codes-main/polaris/build/CMakeFiles/rebuild_cache.dir
+/home/tcirpici/windows/Downloads/hermod-codes-main_2/hermod-codes-main/polaris/build/CMakeFiles/list_install_components.dir
+/home/tcirpici/windows/Downloads/hermod-codes-main_2/hermod-codes-main/polaris/build/CMakeFiles/install.dir
+/home/tcirpici/windows/Downloads/hermod-codes-main_2/hermod-codes-main/polaris/build/CMakeFiles/install/local.dir
+/home/tcirpici/windows/Downloads/hermod-codes-main_2/hermod-codes-main/polaris/build/CMakeFiles/install/strip.dir
