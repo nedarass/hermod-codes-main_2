@@ -157,8 +157,12 @@ class FinalClient:
                 print(f">>> Frekans Gönderildi: {final_hz:.2f} Hz")
 
             # 4. AŞAMALI FREN (Brake Slider -> Yavaşlama Süresi)
-            elif command == "brake" or command == "brake_level":
-                brake_val = float(value)
+            elif command == "brake" or command == "brake_level" or command == "emergency_stop"::
+                if command == "emergency_stop":
+                    brake_val = 100.0
+                    print("🚨 ACİL DURDURMA KOMUTU ALINDI!")
+                else:
+                    brake_val = float(value)
                 
                 if brake_val <= 0:
                     decel_time_sec = 10.0 # Normal duruş
