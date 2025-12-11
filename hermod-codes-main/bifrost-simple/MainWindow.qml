@@ -6,695 +6,391 @@ ApplicationWindow {
     id: mainWindow
     visible: true
     width: 1400
-    height: 800
-    minimumWidth: 800
-    minimumHeight: 500
+    height: 900
+    minimumWidth: 1000
+    minimumHeight: 600
     title: "HERMOD HYPERLOOP CONTROL SYSTEM"
-    
     color: "#0a0e27"
-    
-    // Arka plan gradient
-    Rectangle {
-        anchors.fill: parent
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "#0a0e27" }
-            GradientStop { position: 1.0; color: "#1a1f3a" }
-        }
-    }
-    
-    // Debug - bağlantı durumunu göster
-    Text {
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
-        anchors.margins: 10
-        text: "Speed: " + tcpClient.speed + " | Temp: " + tcpClient.temperature + " | Brake: " + tcpClient.brakePressed
-        color: "#00ff88"
-        font.pixelSize: 10
-        z: 100
-    }
-    
-    // Header Bar
+
+    // =========================================================
+    // 1. HEADER BAR (Bağlantı ve Durum Paneli - Eski Haline Döndü)
+    // =========================================================
     Rectangle {
         id: headerBar
         width: parent.width
         height: 80
-        z: 10
-        
+        z: 100 // En üstte dursun
+
         gradient: Gradient {
             GradientStop { position: 0.0; color: "#1e2645" }
             GradientStop { position: 1.0; color: "#0f1729" }
         }
-        
+
+        // Alt çizgi (Bağlantı durumuna göre renk değiştirir)
         Rectangle {
             anchors.bottom: parent.bottom
             width: parent.width
             height: 2
             color: tcpClient.connected ? "#00ff88" : "#ff4444"
         }
-        
+
         RowLayout {
             anchors.fill: parent
             anchors.margins: 20
             spacing: 30
-            
-            // Hyperloop Logo
+
+            // Logo Alanı
             Rectangle {
-                width: 60
-                height: 60
-                radius: 30
+                width: 50; height: 50; radius: 25
                 color: "#00ff88"
-                Layout.alignment: Qt.AlignVCenter
-                
                 Text {
                     anchors.centerIn: parent
-                    text: "⚡"
-                    font.pixelSize: 32
-                    color: "#0a0e27"
+                    text: "⚡"; font.pixelSize: 28; color: "#0a0e27"
                 }
             }
-            
-            // Title
+
+            // Başlık
             ColumnLayout {
-                spacing: 2
-                Layout.alignment: Qt.AlignVCenter
-                
+                spacing: 0
                 Text {
-                    text: "HERMOD HYPERLOOP"
-                    color: "#ffffff"
-                    font.pixelSize: 24
-                    font.bold: true
-                    font.family: "Segoe UI"
+                    text: "HERMOD HYPERLOOP"; color: "white"
+                    font.pixelSize: 22; font.bold: true
                 }
-                
                 Text {
-                    text: "Control System v1.0"
-                    color: "#00ff88"
-                    font.pixelSize: 12
+                    text: "Control Station v2.0"; color: "#00ff88"
+                    font.pixelSize: 11
                 }
             }
-            
-            Item { Layout.fillWidth: true }
-            
-            // Status Indicator
+
+            Item { Layout.fillWidth: true } // Boşluk
+
+            // Bağlantı Durumu Göstergesi
             Rectangle {
-                width: 180
-                height: 50
-                radius: 25
+                width: 140; height: 40; radius: 20
                 color: tcpClient.connected ? "#00ff8822" : "#ff444422"
                 border.color: tcpClient.connected ? "#00ff88" : "#ff4444"
-                border.width: 2
-                Layout.alignment: Qt.AlignVCenter
-                
+                border.width: 1
+
                 RowLayout {
                     anchors.centerIn: parent
-                    spacing: 12
-                    
+                    spacing: 10
                     Rectangle {
-                        width: 12
-                        height: 12
-                        radius: 6
+                        width: 10; height: 10; radius: 5
                         color: tcpClient.connected ? "#00ff88" : "#ff4444"
-                        
-                        SequentialAnimation on opacity {
-                            running: tcpClient.connected
-                            loops: Animation.Infinite
-                            NumberAnimation { to: 0.3; duration: 800 }
-                            NumberAnimation { to: 1.0; duration: 800 }
-                        }
                     }
-                    
                     Text {
                         text: tcpClient.connected ? "ONLINE" : "OFFLINE"
                         color: tcpClient.connected ? "#00ff88" : "#ff4444"
-                        font.pixelSize: 16
                         font.bold: true
-                        font.family: "Segoe UI"
                     }
                 }
             }
-            
-            // Connect Button
-            Rectangle {
-                width: 120
-                height: 50
-                radius: 8
-                color: connectButtonArea.pressed ? "#00cc66" : (connectButtonArea.containsMouse ? "#00ff88" : "#00dd77")
-                Layout.alignment: Qt.AlignVCenter
-                
-                Text {
-                    anchors.centerIn: parent
-                    text: tcpClient.connected ? "DISCONNECT" : "CONNECT"
-                    color: "#0a0e27"
-                    font.pixelSize: 14
-                    font.bold: true
-                }
-                
-                MouseArea {
-                    id: connectButtonArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onClicked: {
-                        if (tcpClient.connected) {
-                            tcpClient.disconnect()
-                        } else {
-                            console.log("Connecting to 127.0.0.1:5555...")
-                            tcpClient.connectToServer("127.0.0.1", 5555)
-                        }
-                    }
+
+            // CONNECT Butonu
+            Button {
+                text: tcpClient.connected ? "DISCONNECT" : "CONNECT"
+                palette.button: tcpClient.connected ? "#ff4757" : "#00ff88"
+                palette.buttonText: "black"
+                font.bold: true
+                onClicked: {
+                    if (tcpClient.connected) tcpClient.disconnect()
+                    else tcpClient.connectToServer("127.0.0.1", 5555)
                 }
             }
         }
     }
-    
-    // Main Content - Scrollable
+
+    // =========================================================
+    // 2. ANA İÇERİK (Scroll Edilebilir)
+    // =========================================================
     Flickable {
-        anchors.fill: parent
-        anchors.topMargin: 80
-        contentHeight: mainContent.height
-        contentWidth: width
+        anchors.top: headerBar.bottom
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        contentHeight: mainContent.height + 50
         clip: true
-        boundsBehavior: Flickable.StopAtBounds
-        
-        ScrollBar.vertical: ScrollBar {
-            active: true
-            policy: ScrollBar.AsNeeded
-        }
-        
+
         ColumnLayout {
             id: mainContent
-            width: parent.width
-            spacing: 20
-            
-            // Sensor Data Cards
-            GridLayout {
-                id: cardGrid
+            width: parent.width - 40
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.top
+            anchors.topMargin: 20
+            spacing: 25
+
+            // --- A. TÜNEL GÖRSELLEŞTİRME ---
+            Rectangle {
                 Layout.fillWidth: true
-                Layout.margins: 20
-                Layout.topMargin: 10
-                columns: Math.max(1, Math.floor((mainWindow.width - 60) / 280))
-                rowSpacing: 15
-                columnSpacing: 15
-                
-                // Speed Card
-                ModernSensorCard {
-                    Layout.preferredWidth: 260
-                    Layout.preferredHeight: 220
-                    title: "SPEED"
-                    value: tcpClient.speed
-                    unit: "km/h"
-                    icon: "▶"
-                    accentColor: "#00d4ff"
-                    maxValue: 500
-                }
-                
-                // Temperature Card
-                ModernSensorCard {
-                    Layout.preferredWidth: 260
-                    Layout.preferredHeight: 220
-                    title: "TEMP"
-                    value: tcpClient.temperature
-                    unit: "°C"
-                    icon: "🌡"
-                    accentColor: "#ff6b35"
-                    maxValue: 100
-                }
-                
-                // Brake Card
-                ModernSensorCard {
-                    Layout.preferredWidth: 260
-                    Layout.preferredHeight: 220
-                    title: "BRAKE"
-                    value: tcpClient.brakePressed
-                    unit: "%"
-                    icon: "■"
-                    accentColor: "#ff4757"
-                    maxValue: 100
-                }
-                
-                // Battery Card
-                ModernSensorCard {
-                    Layout.preferredWidth: 260
-                    Layout.preferredHeight: 220
-                    title: "BATTERY"
-                    value: "95"
-                    unit: "%"
-                    icon: "⚡"
-                    accentColor: "#00ff88"
-                    maxValue: 100
-                }
+                height: 150
+                color: "#161b33"
+                radius: 10
+                border.color: "#2d3a5c"
+                border.width: 2
 
-
-                 // Position Card (Konum)
-                 ModernSensorCard {
-                     Layout.preferredWidth: 260
-                     Layout.preferredHeight: 220
-                     title: "POSITION"
-                     value: tcpClient.position
-                     unit: "m"
-                     icon: "📍"  // Veya "🚩"
-                      accentColor: "#d4af37" // Altın sarısı (Gold) - Farklılık olsun diye
-                     maxValue: 3000 // Pisti 3km varsayarak (bunu değiştirebilirsin)
-                }
-
-                 // Acceleration Card (İvme)
-                 ModernSensorCard {
-                    Layout.preferredWidth: 260
-                    Layout.preferredHeight: 220
-                    title: "ACCELERATION"
-                    value: tcpClient.acceleration
-                    unit: "m/s²"
-                    icon: "🚀"
-                    accentColor: "#bd93f9" // Mor (Purple) - Neon tema ile uyumlu
-                    maxValue: 20 // Max 20 m/s² (Yaklaşık 2G) varsayıldı
-                }
-            }
-            
-            // Control Panels
-            GridLayout {
-                id: controlGrid
-                Layout.fillWidth: true
-                Layout.margins: 20
-                columns: mainWindow.width > 900 ? 2 : 1
-                rowSpacing: 15
-                columnSpacing: 15
-                
-                // Motor Control Panel
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 520
-                    Layout.minimumWidth: 300
-                    radius: 15
-                    color: "#1e2645"
-                    border.color: "#2d3a5c"
-                    border.width: 1
-                    
-                    ColumnLayout {
-                        anchors.fill: parent
-                        anchors.margins: 25
-                        spacing: 20
-                        
-                        Text {
-                            text: "⚙ MOTOR CONTROL"
-                            color: "#00d4ff"
-                            font.pixelSize: 22
-                            font.bold: true
-                        }
-                        
-                        Rectangle { height: 1; Layout.fillWidth: true; color: "#2d3a5c" }
-                        
-                        // Motor Start/Stop Button
+                // Metre Çizgileri
+                Row {
+                    anchors.centerIn: parent
+                    spacing: (parent.width - 60) / 20
+                    Repeater {
+                        model: 21
                         Rectangle {
-                            id: motorButton
+                            width: 1; height: 100
+                            color: "#2d3a5c"
+                            Text {
+                                anchors.top: parent.bottom; anchors.topMargin: 5
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: (index * 10) + "m"; color: "#506080"; font.pixelSize: 10
+                            }
+                        }
+                    }
+                }
+
+                // HAREKET EDEN POD
+                Rectangle {
+                    id: podIndicator
+                    width: (2.0 / tunnelLen) * visWidth; height: 30; radius: 2
+                    color: "#00d4ff"; border.color: "white"; border.width: 2
+
+                    property real tunnelLen: 208.0
+                    property real visWidth: parent.width - 80
+
+                    // Konuma göre X hesaplama
+                    x: 40 + (Math.min(tcpClient.position, tunnelLen) / tunnelLen) * visWidth
+                    y: (parent.height - height) / 2
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: tcpClient.position.toFixed(1) + "m"
+                        color: "black"; font.bold: true; font.pixelSize: 11
+                    }
+
+                    // Hareket Animasyonu
+                    Behavior on x { NumberAnimation { duration: 100 } }
+                }
+
+                // Kritik Noktalar (Sarı: Start, Kırmızı: Özel Bölgeler)
+                Rectangle { x: (11/208)*(parent.width-80)+40; y: 15; width: 2; height: 120; color: "yellow"; opacity: 0.6 }
+                Rectangle { x: (86/208)*(parent.width-80)+40; y: 15; width: 2; height: 120; color: "red"; opacity: 0.6 }
+                Rectangle { x: (160/208)*(parent.width-80)+40; y: 15; width: 2; height: 120; color: "red"; opacity: 0.6 }
+            }
+
+            // --- B. SENSÖR KARTLARI (İvme Eklendi) ---
+            GridLayout {
+                Layout.fillWidth: true
+                columns: 5 // 5 Kart yan yana
+                columnSpacing: 15
+
+                // 1. HIZ
+                SensorCard { title: "SPEED"; value: tcpClient.speed; unit: "km/h"; icon: "🚀"; colorCode: "#00d4ff" }
+                // 2. MOTOR ISISI
+                SensorCard { title: "MOTOR TEMP"; value: tcpClient.temperature; unit: "°C"; icon: "🌡"; colorCode: "#ff6b35" }
+                // 3. BATARYA
+                SensorCard { title: "BATTERY"; value: "48.2"; unit: "V"; icon: "⚡"; colorCode: "#f9ca24" }
+                // 4. İVME (YENİ)
+                SensorCard { title: "ACCEL"; value: tcpClient.acceleration; unit: "m/s²"; icon: "📉"; colorCode: "#bd93f9" }
+                // 5. FREN BASINCI
+                SensorCard { title: "BRAKE PRS"; value: tcpClient.brakePressed; unit: "%"; icon: "🛑"; colorCode: "#ff4757" }
+            }
+
+            // --- C. KONTROL PANELLERİ (Slider Yok, Sadece Input) ---
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 250
+                spacing: 20
+
+                // MOTOR CONTROL KUTUSU
+                ControlBox {
+                    Layout.fillWidth: true; Layout.fillHeight: true
+                    title: "MOTOR CONTROL"
+                    accentColor: "#00d4ff"
+
+                    ColumnLayout {
+                        anchors.centerIn: parent
+                        spacing: 20
+                        width: parent.width * 0.8
+
+                        // Input Alanı
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Text { text: "Frequency (0-60 Hz):"; color: "#b0b8cc"; font.pixelSize: 14 }
+                            Item { Layout.fillWidth: true }
+
+                            TextField {
+                                id: motorInput
+                                placeholderText: "0.0"
+                                color: "white"
+                                font.pixelSize: 18
+                                horizontalAlignment: Text.AlignHCenter
+                                background: Rectangle { color: "#0f1729"; border.color: "#2d3a5c"; radius: 5; width: 80; height: 40 }
+                                validator: DoubleValidator { bottom: 0; top: 60 }
+                            }
+
+                            Button {
+                                text: "SET"
+                                onClicked: {
+                                    var val = parseFloat(motorInput.text)
+                                    tcpClient.sendCommand("set_frequency", val)
+                                    motorStatusText.text = "Target: " + val + " Hz"
+                                }
+                            }
+                        }
+
+                        Text { id: motorStatusText; text: "Target: 0 Hz"; color: "#00d4ff"; font.bold: true }
+
+                        // Hızlı Butonlar
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 10
+                            Button {
+                                text: "START (10Hz)"
+                                Layout.fillWidth: true
+                                onClicked: {
+                                    motorInput.text = "10"
+                                    tcpClient.sendCommand("set_frequency", 10)
+                                }
+                            }
+                            Button {
+                                text: "STOP (0Hz)"
+                                Layout.fillWidth: true
+                                palette.button: "#ff4757"
+                                onClicked: {
+                                    motorInput.text = "0"
+                                    tcpClient.sendCommand("set_frequency", 0)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // BRAKE CONTROL KUTUSU
+                ControlBox {
+                    Layout.fillWidth: true; Layout.fillHeight: true
+                    title: "BRAKE CONTROL"
+                    accentColor: "#ff4757"
+
+                    ColumnLayout {
+                        anchors.centerIn: parent
+                        spacing: 20
+                        width: parent.width * 0.8
+
+                        // Input Alanı
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Text { text: "Force (0-100 %):"; color: "#b0b8cc"; font.pixelSize: 14 }
+                            Item { Layout.fillWidth: true }
+
+                            TextField {
+                                id: brakeInput
+                                placeholderText: "0"
+                                color: "white"
+                                font.pixelSize: 18
+                                horizontalAlignment: Text.AlignHCenter
+                                background: Rectangle { color: "#0f1729"; border.color: "#2d3a5c"; radius: 5; width: 80; height: 40 }
+                                validator: IntValidator { bottom: 0; top: 100 }
+                            }
+
+                            Button {
+                                text: "APPLY"
+                                onClicked: {
+                                    var val = parseFloat(brakeInput.text)
+                                    tcpClient.sendCommand("brake_level", val)
+                                }
+                            }
+                        }
+
+                        // ACİL DURDURMA BUTONU (Çok Büyük)
+                        Button {
                             Layout.fillWidth: true
                             Layout.preferredHeight: 60
-                            radius: 10
-
-                             // Buton durumu için bir property (varsayılan: kapalı)
-                            property bool isRunning: false
-
-                            // Çalışıyorsa Kırmızı (Durdur), Duruyorsa Mavi (Başlat)
-                            color: isRunning ? "#ff4757" : "#00d4ff"
-                            border.color: isRunning ? "#ff8fa3" : "#80eaff"
-                            border.width: 2
-
-                            RowLayout {
-                                anchors.centerIn: parent
-                                spacing: 10
-
-                                Text {
-                                    text: "⚡"
-                                    font.pixelSize: 20
-                                    color: "#0a0e27"
-                                }
-
-                                Text {
-                                    text: motorButton.isRunning ? "STOP MOTOR" : "START MOTOR"
-                                    color: "#0a0e27"
-                                    font.pixelSize: 18
-                                    font.bold: true
-                                    font.family: "Segoe UI"
-                                    }
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-
-                                // Tıklanınca ne olsun?
-                                onClicked: {
-                                motorButton.isRunning = !motorButton.isRunning
-
-
-                                var cmdValue = motorButton.isRunning ? 1 : 0
-                                tcpClient.sendCommand("motor_power", cmdValue)
-
-                               console.log("Motor komutu gönderildi: " + cmdValue)
-                                }
-
-
-                                onEntered: parent.opacity = 0.9
-                                onExited: parent.opacity = 1.0
-                           }
-
-
-                            Behavior on color {
-                            ColorAnimation { duration: 200 }
-                                }
-                         }
-
-                                                // Buton ile slider arasına biraz boşluk
-                                                Item { height: 10 }
-                        // Frequency Control
-                        ControlSlider {
-                            id: frequencySlider
-                            Layout.fillWidth: true
-                            label: "Motor Frequency"
-                            unit: "Hz"
-                            minVal: 0
-                            maxVal: 60
-                            accentColor: "#00d4ff"
-                            commandName: "set_frequency"
-                        }
-                        
-                        Item { height: 10 }
-                        
-                        // Speed Limit
-                        ControlSlider {
-                            id: speedLimitSlider
-                            Layout.fillWidth: true
-                            label: "Speed Limit"
-                            unit: "km/h"
-                            minVal: 0
-                            maxVal: 500
-                            currentValue: 100
-                            accentColor: "#00ff88"
-                            commandName: "speed_limit"
-                        }
-                        
-                        Item { Layout.fillHeight: true }
-                    }
-                }
-                
-                // Safety Control Panel
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 350
-                    Layout.minimumWidth: 300
-                    radius: 15
-                    color: "#1e2645"
-                    border.color: "#2d3a5c"
-                    border.width: 1
-                    
-                    ColumnLayout {
-                        anchors.fill: parent
-                        anchors.margins: 25
-                        spacing: 20
-                        
-                        Text {
-                            text: "🛑 SAFETY CONTROLS"
-                            color: "#ff6b35"
-                            font.pixelSize: 22
+                            text: "EMERGENCY STOP"
                             font.bold: true
-                        }
-                        
-                        Rectangle { height: 1; Layout.fillWidth: true; color: "#2d3a5c" }
-                        
-                        // Brake Control
-                        ControlSlider {
-                            id: brakeSlider
-                            Layout.fillWidth: true
-                            label: "Brake Force"
-                            unit: "%"
-                            minVal: 0
-                            maxVal: 100
-                            accentColor: "#ff4757"
-                            commandName: "brake"
-                        }
-                        
-                        Item { Layout.fillHeight: true }
-                        
-                        // Emergency Stop
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 100
-                            radius: 12
-                            color: emergencyMouseArea.pressed ? "#cc0000" : (emergencyMouseArea.containsMouse ? "#ff3333" : "#ff0000")
-                            
-                            ColumnLayout {
-                                anchors.centerIn: parent
-                                spacing: 8
-                                
-                                Text {
-                                    text: "⚠"
-                                    font.pixelSize: 40
-                                    color: "white"
-                                    Layout.alignment: Qt.AlignHCenter
-                                }
-                                
-                                Text {
-                                    text: "EMERGENCY STOP"
-                                    font.pixelSize: 20
-                                    font.bold: true
-                                    color: "white"
-                                    Layout.alignment: Qt.AlignHCenter
-                                }
+                            font.pixelSize: 18
+
+                            background: Rectangle {
+                                color: parent.down ? "#990000" : "#cc0000"
+                                radius: 8
+                                border.color: "red"
+                                border.width: 2
                             }
-                            
-                            MouseArea {
-                                id: emergencyMouseArea
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                onClicked: {
-                                    tcpClient.sendCommand("emergency_stop", 1)
-                                }
+                            contentItem: Text {
+                                text: parent.text
+                                color: "white"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                font: parent.font
                             }
-                            
-                            SequentialAnimation on scale {
-                                running: true
-                                loops: Animation.Infinite
-                                NumberAnimation { to: 1.02; duration: 1000; easing.type: Easing.InOutQuad }
-                                NumberAnimation { to: 1.0; duration: 1000; easing.type: Easing.InOutQuad }
+
+                            onClicked: {
+                                brakeInput.text = "100"
+                                motorInput.text = "0"
+                                tcpClient.sendCommand("emergency_stop", 1)
                             }
                         }
                     }
                 }
             }
-            
-            Item { height: 20 }  // Bottom spacing
         }
     }
-    
-    // Modern Sensor Card Component
-    component ModernSensorCard: Rectangle {
+
+    // =========================================================
+    // YARDIMCI BİLEŞENLER
+    // =========================================================
+
+    // Sensör Kartı Tasarımı
+    component SensorCard: Rectangle {
         property string title: ""
         property string value: "0"
         property string unit: ""
         property string icon: ""
-        property color accentColor: "#00ff88"
-        property real maxValue: 100
-        
-        radius: 15
+        property color colorCode: "white"
+
+        Layout.fillWidth: true
+        Layout.preferredHeight: 110
         color: "#1e2645"
-        border.color: accentColor
-        border.width: 2
-        
-        Rectangle {
-            anchors.fill: parent
-            anchors.margins: 2
-            radius: 13
-            color: "#0f1729"
-            
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: 20
-                spacing: 15
-                
-                // Header
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 12
-                    
-                    Rectangle {
-                        width: 40
-                        height: 40
-                        radius: 20
-                        color: accentColor + "33"
-                        
-                        Text {
-                            anchors.centerIn: parent
-                            text: icon
-                            font.pixelSize: 22
-                            color: accentColor
-                        }
-                    }
-                    
-                    Text {
-                        text: title
-                        color: "#b0b8cc"
-                        font.pixelSize: 16
-                        font.bold: true
-                        font.family: "Segoe UI"
-                    }
-                }
-                
-                Item { Layout.fillHeight: true }
-                
-                // Value Display
-                RowLayout {
-                    Layout.alignment: Qt.AlignHCenter
-                    spacing: 8
-                    
-                    Text {
-                        text: value
-                        color: accentColor
-                        font.pixelSize: 52
-                        font.bold: true
-                        font.family: "Segoe UI"
-                    }
-                    
-                    Text {
-                        text: unit
-                        color: "#7080a0"
-                        font.pixelSize: 20
-                        Layout.alignment: Qt.AlignBottom
-                        Layout.bottomMargin: 10
-                    }
-                }
-                
-                // Progress Bar
-                Rectangle {
-                    Layout.fillWidth: true
-                    height: 8
-                    radius: 4
-                    color: "#2d3a5c"
-                    
-                    Rectangle {
-                        width: parent.width * Math.min(parseFloat(value) / maxValue, 1.0)
-                        height: parent.height
-                        radius: 4
-                        color: accentColor
-                        
-                        Behavior on width {
-                            NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Glow effect
-        Rectangle {
-            anchors.fill: parent
-            anchors.margins: -4
-            radius: 17
-            color: "transparent"
-            border.color: accentColor
-            border.width: 1
-            opacity: 0.3
+        radius: 10
+        border.color: colorCode
+
+        ColumnLayout {
+            anchors.centerIn: parent
+            spacing: 5
+            Text { text: icon + " " + title; color: "#b0b8cc"; font.pixelSize: 13 }
+            Text { text: value; color: colorCode; font.pixelSize: 32; font.bold: true }
+            Text { text: unit; color: "#7080a0"; font.pixelSize: 13 }
         }
     }
-    
-    // Control Slider Component
-    component ControlSlider: Rectangle {
-        property string label: ""
-        property string unit: ""
-        property real minVal: 0
-        property real maxVal: 100
-        property real currentValue: 0
-        property color accentColor: "#00ff88"
-        property string commandName: ""
-        
-        height: 120
+
+    // Kontrol Kutusu Tasarımı
+    component ControlBox: Rectangle {
+        property string title: ""
+        property color accentColor: "white"
+        default property alias content: contentArea.data
+
+        color: "#1e2645"
         radius: 10
-        color: "#0f1729"
         border.color: "#2d3a5c"
-        border.width: 1
-        
+
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 15
-            spacing: 12
-            
-            RowLayout {
-                Layout.fillWidth: true
-                
-                Text {
-                    text: label
-                    color: "#b0b8cc"
-                    font.pixelSize: 16
-                    font.bold: true
-                }
-                
-                Item { Layout.fillWidth: true }
-                
-                Text {
-                    id: valueDisplay
-                    text: Math.round(slider.value) + " " + unit
-                    color: accentColor
-                    font.pixelSize: 20
-                    font.bold: true
-                }
-            }
-            
-            Slider {
-                id: slider
-                Layout.fillWidth: true
-                from: minVal
-                to: maxVal
-                value: currentValue
-                stepSize: 1
-                
-                background: Rectangle {
-                    x: slider.leftPadding
-                    y: slider.topPadding + slider.availableHeight / 2 - height / 2
-                    width: slider.availableWidth
-                    height: 8
-                    radius: 4
-                    color: "#2d3a5c"
-                    
-                    Rectangle {
-                        width: slider.visualPosition * parent.width
-                        height: parent.height
-                        color: accentColor
-                        radius: 4
-                    }
-                }
-                
-                handle: Rectangle {
-                    x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
-                    y: slider.topPadding + slider.availableHeight / 2 - height / 2
-                    width: 24
-                    height: 24
-                    radius: 12
-                    color: slider.pressed ? Qt.darker(accentColor, 1.2) : accentColor
-                    border.color: "#ffffff"
-                    border.width: 2
-                }
-            }
-            
+            spacing: 0
+
+            // Başlık Çubuğu
             Rectangle {
-                Layout.fillWidth: true
-                height: 36
-                radius: 6
-                color: sendButtonArea.pressed ? Qt.darker(accentColor, 1.3) : (sendButtonArea.containsMouse ? Qt.lighter(accentColor, 1.2) : accentColor)
-                
+                Layout.fillWidth: true; height: 40
+                color: "transparent"
+                border.width: 0
+
                 Text {
                     anchors.centerIn: parent
-                    text: "SEND"
-                    color: "#0a0e27"
-                    font.pixelSize: 14
-                    font.bold: true
+                    text: title; color: accentColor; font.bold: true; font.pixelSize: 16
                 }
-                
-                MouseArea {
-                    id: sendButtonArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onClicked: {
-                        tcpClient.sendCommand(commandName, Math.round(slider.value))
-                    }
-                }
+                Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: "#2d3a5c" }
+            }
+
+            // İçerik Alanı
+            Item {
+                id: contentArea
+                Layout.fillWidth: true; Layout.fillHeight: true
             }
         }
     }
