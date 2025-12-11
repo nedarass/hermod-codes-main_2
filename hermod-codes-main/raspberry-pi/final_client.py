@@ -112,7 +112,7 @@ class FinalClient:
             
             REG_OPERATION = 0x0001
             REG_FREQUENCY = 0x0002
-            REG_TORQUE    = 0x000C
+            REG_DECEL_TIME = 0x0202  # Yavaşlama Zamanı (C1-02)
             
             packet = None
 
@@ -156,14 +156,39 @@ class FinalClient:
                 packet = base + self.calculate_crc(base)
                 print(f">>> Frekans Gönderildi: {final_hz:.2f} Hz")
 
-            # 4. FREN
+           # 4. AŞAMALI FREN (Brake Slider -> Yavaşlama Süresi)
+            # Slider %0 (Fren Yok)   -> Yavaşlama Süresi = 10.0 sn (Serbest duruşa yakın)
+            # Slider %100 (Tam Fren) -> Yavaşlama Süresi = 0.1 sn (Çakılma)
             elif command == "brake" or command == "brake_level":
-                brake_pct = int(value)
-                yaskawa_val = brake_pct * 10 
-                base = bytes([INVERTER_SLAVE_ID, 0x06, (REG_TORQUE >> 8), (REG_TORQUE & 0xFF), 
-                              (yaskawa_val >> 8) & 0xFF, yaskawa_val & 0xFF])
-                packet = base + self.calculate_crc(base)
-                print(f">>> Fren Şiddeti: %{brake_pct}")
+                brake_val = float(value)
+                
+                # Fren 0 ise müdahale etme (veya normal duruş süresine al)
+                if brake_val <= 0:
+                    # Fren bırakıldı, normal duruş süresi (örn: 10 saniye)
+                    decel_time_sec = 10.0
+                else:
+                    # Formül: Fren arttıkça süre azalmalı
+                    # %100 -> 0.1sn, %1 -> 10sn
+                    decel_time_sec = 10.0 - (brake_val / 100.0 * 9.9)
+                    if decel_time_sec < 0.1: decel_time_sec = 0.1
+
+                # Yaskawa'ya Yavaşlama Süresini Yaz (Register 0x0202)
+                # Birim genelde 0.1sn veya 0.01sn'dir (Modele göre değişir, 0.1 kabul ediyoruz)
+                reg_val = int(decel_time_sec * 10) 
+                
+                # 1. Adım: Süreyi Ayarla
+                base = bytes([INVERTER_SLAVE_ID, 0x06, (REG_DECEL_TIME >> 8), (REG_DECEL_TIME & 0xFF), 
+                              (reg_val >> 8) & 0xFF, reg_val & 0xFF])
+                packet_time = base + self.calculate_crc(base)
+                self.inverter.write(packet_time)
+                time.sleep(0.02) # Kısa bekleme
+                
+                # 2. Adım: Motoru Durdur (STOP komutu gönder)
+                # Yeni ayarladığımız "sertlikte" duracak
+                stop_base = bytes([INVERTER_SLAVE_ID, 0x06, (REG_OPERATION >> 8), (REG_OPERATION & 0xFF), 0x00, 0x00])
+                packet = stop_base + self.calculate_crc(stop_base)
+                
+                print(f">>> FREN UYGULANIYOR: %{brake_val} (Süre: {decel_time_sec:.1f}s)")
 
             # GÖNDERİM
             if packet:
