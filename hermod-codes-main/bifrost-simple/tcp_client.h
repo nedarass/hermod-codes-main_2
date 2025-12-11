@@ -13,7 +13,7 @@ class TCPClient : public QObject {
     Q_PROPERTY(QString temperature READ getTemperature NOTIFY sensorDataChanged)
     Q_PROPERTY(QString brakePressed READ getBrakePressed NOTIFY sensorDataChanged)
     // konum ve ivme için 
-    Q_PROPERTY(QString position READ getPosition NOTIFY sensorDataChanged)
+    Q_PROPERTY(double position READ getPosition NOTIFY sensorDataChanged)
     Q_PROPERTY(QString acceleration READ getAcceleration NOTIFY sensorDataChanged)
 
 public:
@@ -30,7 +30,7 @@ public:
     QString getTemperature() const { return temperature; }
     QString getBrakePressed() const { return brakePressed; }
     // konum ve ivme için
-    QString getPosition() const { return position; }
+    double getPosition() const { return position; }
     QString getAcceleration() const { return acceleration; }
 
 signals:
@@ -53,7 +53,7 @@ private:
     QString brakePressed;
     QString buffer;
     // konum ve ivme için
-    QString position;
+    double position;
     QString acceleration;
 };
 
