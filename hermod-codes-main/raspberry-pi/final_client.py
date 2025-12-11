@@ -30,8 +30,9 @@ MAX_SYSTEM_SPEED_KMH = 500.0
 MAX_INVERTER_FREQ_HZ = 60.0
 
 # Güvenlik Eşikleri
-SAFETY_TEMP_LIMIT = 60.0
-SAFETY_BRAKE_PRESSURE = 85
+SAFETY_TEMP_LIMIT = 60.0       # Araç Motoru Max Sıcaklık
+SAFETY_BATTERY_LIMIT = 50.0    # [YENİ] Batarya Max Sıcaklık
+SAFETY_BRAKE_PRESSURE = 85     # Fren Basıncı Limiti
 SPEED_LIMIT_THRESHOLD = 250    # Yazılımsal acil durdurma limiti
 
 class FinalClient:
@@ -41,7 +42,6 @@ class FinalClient:
         self.sock = None
         self.running = False
         
-        # [DÜZELTME 1] Bu değişken eksikti, eklendi.
         # Başlangıçta hız limiti en yüksekte başlar.
         self.current_speed_limit_kmh = MAX_SYSTEM_SPEED_KMH 
         
@@ -112,7 +112,8 @@ class FinalClient:
             
             REG_OPERATION = 0x0001
             REG_FREQUENCY = 0x0002
-            REG_DECEL_TIME = 0x0202  # Yavaşlama Zamanı (C1-02)
+            REG_DECEL_TIME = 0x0202
+            REG_TORQUE = 0x000C # Bazı modellerde tork/akım limiti
             
             packet = None
 
@@ -139,7 +140,6 @@ class FinalClient:
                 requested_hz = float(value)
                 
                 # --- HIZ LİMİTİ HESABI ---
-                # Anlık hız limitini Hz cinsine çeviriyoruz
                 limit_hz = (self.current_speed_limit_kmh / MAX_SYSTEM_SPEED_KMH) * MAX_INVERTER_FREQ_HZ
                 
                 # İstenen frekans ile limiti kıyaslıyoruz
@@ -156,38 +156,29 @@ class FinalClient:
                 packet = base + self.calculate_crc(base)
                 print(f">>> Frekans Gönderildi: {final_hz:.2f} Hz")
 
-           # 4. AŞAMALI FREN (Brake Slider -> Yavaşlama Süresi)
-            # Slider %0 (Fren Yok)   -> Yavaşlama Süresi = 10.0 sn (Serbest duruşa yakın)
-            # Slider %100 (Tam Fren) -> Yavaşlama Süresi = 0.1 sn (Çakılma)
+            # 4. AŞAMALI FREN (Brake Slider -> Yavaşlama Süresi)
             elif command == "brake" or command == "brake_level":
                 brake_val = float(value)
                 
-                # Fren 0 ise müdahale etme (veya normal duruş süresine al)
                 if brake_val <= 0:
-                    # Fren bırakıldı, normal duruş süresi (örn: 10 saniye)
-                    decel_time_sec = 10.0
+                    decel_time_sec = 10.0 # Normal duruş
                 else:
-                    # Formül: Fren arttıkça süre azalmalı
-                    # %100 -> 0.1sn, %1 -> 10sn
+                    # Fren arttıkça süre azalır (%100 -> 0.1sn)
                     decel_time_sec = 10.0 - (brake_val / 100.0 * 9.9)
                     if decel_time_sec < 0.1: decel_time_sec = 0.1
 
-                # Yaskawa'ya Yavaşlama Süresini Yaz (Register 0x0202)
-                # Birim genelde 0.1sn veya 0.01sn'dir (Modele göre değişir, 0.1 kabul ediyoruz)
                 reg_val = int(decel_time_sec * 10) 
                 
-                # 1. Adım: Süreyi Ayarla
+                # Süreyi Ayarla
                 base = bytes([INVERTER_SLAVE_ID, 0x06, (REG_DECEL_TIME >> 8), (REG_DECEL_TIME & 0xFF), 
                               (reg_val >> 8) & 0xFF, reg_val & 0xFF])
                 packet_time = base + self.calculate_crc(base)
                 self.inverter.write(packet_time)
-                time.sleep(0.02) # Kısa bekleme
+                time.sleep(0.02)
                 
-                # 2. Adım: Motoru Durdur (STOP komutu gönder)
-                # Yeni ayarladığımız "sertlikte" duracak
+                # Motoru Durdur (STOP)
                 stop_base = bytes([INVERTER_SLAVE_ID, 0x06, (REG_OPERATION >> 8), (REG_OPERATION & 0xFF), 0x00, 0x00])
                 packet = stop_base + self.calculate_crc(stop_base)
-                
                 print(f">>> FREN UYGULANIYOR: %{brake_val} (Süre: {decel_time_sec:.1f}s)")
 
             # GÖNDERİM
@@ -202,19 +193,27 @@ class FinalClient:
     def process_sensor_data(self, data):
         """Sensör verilerini güvenlik limitlerine göre kontrol et"""
         
-        # Hız Kontrolü (Acil Durdurma Limiti)
+        # 1. Hız Kontrolü
         if 'speed' in data:
             if data['speed'] > SPEED_LIMIT_THRESHOLD:
                 print(f"🚨 KRİTİK HIZ AŞIMI! ACİL DURDURMA.")
                 self.send_inverter_command("STOP")
 
-        # Sıcaklık Kontrolü
+        # 2. Araç Motor Sıcaklığı Kontrolü
         if 'temperature' in data:
             if data['temperature'] > SAFETY_TEMP_LIMIT:
-                print(f"🚨 AŞIRI ISINMA! ACİL DURDURMA.")
+                print(f"🚨 MOTOR AŞIRI ISINMA ({data['temperature']}°C)! ACİL DURDURMA.")
                 self.send_inverter_command("STOP")
+
+        # 3. [YENİ] Batarya Sıcaklığı Kontrolü
+        if 'battery_temp' in data:
+            bat_temp = data['battery_temp']
+            if bat_temp > SAFETY_BATTERY_LIMIT:
+                print(f"🚨 BATARYA KRİTİK SICAKLIK ({bat_temp}°C)! SİSTEM KAPATILIYOR.")
+                self.send_inverter_command("STOP")
+                # İstersen burada freni de çekebilirsin
         
-        # Otomatik Fren (Basınca Göre)
+        # 4. Otomatik Fren (Basınca Göre)
         if 'brake_pressure' in data:
             if data['brake_pressure'] > SAFETY_BRAKE_PRESSURE:
                 self.send_inverter_command("brake", 100)
@@ -248,11 +247,9 @@ class FinalClient:
                     except: pass
             except: break
 
-    
+    def cleanup(self):
         print("\n--- SİSTEM KAPATILIYOR ---")
         self.running = False
-        
-        # 1. Motoru Durdur
         if self.inverter:
             try:
                 self.send_inverter_command("STOP")
@@ -260,13 +257,9 @@ class FinalClient:
                 self.inverter.close()
                 print("✓ Inverter kapatıldı")
             except: pass
-            
-        # 2. STM32 Kapat
         if self.stm32: 
             self.stm32.close()
             print("✓ STM32 kapatıldı")
-            
-        # 3. Server Kapat
         if self.sock: 
             self.sock.close()
             print("✓ Server bağlantısı kesildi")
@@ -297,13 +290,13 @@ class FinalClient:
                     # Interface'e Gönder
                     self.send_to_server(sensor_data)
                     
-                    # Ekrana Yazdır
+                    # Ekrana Yazdır (Batarya Sıcaklığını da ekledim)
                     pos = sensor_data.get('position', 0)
                     acc = sensor_data.get('acceleration', 0)
                     spd = sensor_data.get('speed', 0)
+                    bat = sensor_data.get('battery_temp', 0)
                     
-                    # Tek satırda sürekli güncellenen çıktı
-                    sys.stdout.write(f"\r📊 Hız: {spd} km/h | Konum: {pos} m | İvme: {acc} m/s² | Limit: {self.current_speed_limit_kmh:.0f} km/h   ")
+                    sys.stdout.write(f"\r📊 Hız: {spd:.1f} km/h | Batarya: {bat:.1f}°C | Konum: {pos:.1f} m | İvme: {acc:.2f} m/s²   ")
                     sys.stdout.flush()
 
                 time.sleep(0.05) 
